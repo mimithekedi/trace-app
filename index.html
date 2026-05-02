@@ -60,7 +60,11 @@ body {
 <script>
 
 // 📷 CAMERA
-navigator.mediaDevices.getUserMedia({ video: true })
+navigator.mediaDevices.getUserMedia({
+  video: {
+    facingMode: { exact: "environment" }
+  }
+})
 .then(stream => {
   document.getElementById("video").srcObject = stream;
 });
