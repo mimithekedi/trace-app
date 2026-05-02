@@ -10,7 +10,7 @@
 <style>
 
 /* =========================
-   GLOBAL
+   BASE
 ========================= */
 
 body {
@@ -21,7 +21,7 @@ body {
 }
 
 /* =========================
-   START SCREEN (ONLY HERE)
+   START SCREEN
 ========================= */
 
 #startScreen {
@@ -29,7 +29,7 @@ body {
   width: 100%;
   height: 100%;
 
-  background: radial-gradient(circle at center, #fff7c2, #fde68a);
+  background: #fde68a; /* pastel sarı */
 
   display: flex;
   flex-direction: column;
@@ -37,60 +37,64 @@ body {
   align-items: center;
 
   z-index: 999;
-  color: #1f2937;
-
   text-align: center;
-  transition: opacity 0.6s ease;
 }
 
-/* chibi pen */
 #chibiPen {
-  font-size: 48px;
+  font-size: 52px;
   margin-bottom: 15px;
   animation: floatPen 2.2s ease-in-out infinite;
 }
 
 @keyframes floatPen {
-  0%   { transform: translateY(0px) rotate(-4deg); }
-  50%  { transform: translateY(-6px) rotate(4deg); }
-  100% { transform: translateY(0px) rotate(-4deg); }
+  0% { transform: translateY(0px) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+  100% { transform: translateY(0px) rotate(-3deg); }
 }
 
-/* title */
 #title {
-  font-size: 20px;
-  margin-bottom: 10px;
+  font-size: 28px;
+  margin-bottom: 20px;
+  line-height: 1.2;
+  color: #1f2937;
 }
 
-/* tap hint */
+/* pink button */
 #hint {
   font-size: 10px;
-  opacity: 0.7;
+  background: #fbcfe8;
+  color: #3b0764;
+
+  padding: 12px 18px;
+  border-radius: 14px;
+
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+
   animation: floatHint 1.2s infinite alternate;
 }
 
 @keyframes floatHint {
-  0% { transform: translateY(0px); opacity: 0.4; }
-  100% { transform: translateY(4px); opacity: 0.9; }
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(4px); }
 }
 
-/* credit */
 #startCredit {
   position: absolute;
   bottom: 18px;
   font-size: 8px;
   opacity: 0.6;
-  line-height: 1.4;
+  color: #1f2937;
 }
 
-/* fade out */
+/* fade */
 #startScreen.hidden {
   opacity: 0;
   pointer-events: none;
+  transition: 0.6s ease;
 }
 
 /* =========================
-   APP (TRACE MODE)
+   APP SCREEN
 ========================= */
 
 /* camera */
@@ -112,24 +116,8 @@ body {
   touch-action: none;
 }
 
-/* grid */
-#grid {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-
-  background-image:
-    linear-gradient(#ffffff10 1px, transparent 1px),
-    linear-gradient(90deg, #ffffff10 1px, transparent 1px);
-
-  background-size: 24px 24px;
-
-  display: none;
-}
-
 /* =========================
-   UI BUTTONS
+   UI
 ========================= */
 
 #buttons {
@@ -156,7 +144,6 @@ button {
 }
 
 #lockBtn { background:#fbcfe8; }
-#gridBtn { background:#fde68a; }
 #fileBtn { background:#bfdbfe; }
 
 /* opacity */
@@ -190,12 +177,12 @@ button {
 
 <body>
 
-<!-- 🎬 START SCREEN -->
+<!-- START SCREEN -->
 <div id="startScreen">
 
   <div id="chibiPen">✏️</div>
 
-  <div id="title">trace your art!</div>
+  <div id="title">trace<br>your art!</div>
 
   <div id="hint">tap to start</div>
 
@@ -207,16 +194,13 @@ button {
 
 </div>
 
-<!-- TRACE APP -->
-<div id="grid"></div>
-
+<!-- APP -->
 <video id="video" autoplay playsinline></video>
 
 <img id="overlay" src="" />
 
 <div id="buttons">
   <button id="lockBtn">Lock</button>
-  <button id="gridBtn">Grid</button>
   <button id="fileBtn">Load</button>
 </div>
 
@@ -236,8 +220,6 @@ const startScreen = document.getElementById("startScreen");
 
 startScreen.addEventListener("click", () => {
 
-  playClick();
-
   startScreen.classList.add("hidden");
 
   setTimeout(() => {
@@ -245,13 +227,6 @@ startScreen.addEventListener("click", () => {
   }, 400);
 
 });
-
-// =========================
-// CLICK SOUND (placeholder)
-// =========================
-function playClick(){
-  // later mp3 ekleriz
-}
 
 // =========================
 // CAMERA
@@ -265,7 +240,7 @@ function initCamera(){
 }
 
 // =========================
-// FILE INPUT (hidden real input)
+// FILE INPUT
 // =========================
 const file = document.createElement("input");
 file.type = "file";
@@ -281,20 +256,15 @@ file.addEventListener("change", e => {
 });
 
 document.getElementById("fileBtn").addEventListener("click", () => {
-  playClick();
   file.click();
 });
 
 // =========================
-// OVERLAY RESET
+// OPACITY
 // =========================
-function resetOverlay(){
-  state.scale = 1;
-  state.rotation = 0;
-  state.offsetX = window.innerWidth/2 - 150;
-  state.offsetY = window.innerHeight/2 - 150;
-  updateTransform();
-}
+document.getElementById("opacity").addEventListener("input", e => {
+  overlay.style.opacity = e.target.value;
+});
 
 // =========================
 // STATE
@@ -322,6 +292,17 @@ function updateTransform(){
 }
 
 // =========================
+// RESET
+// =========================
+function resetOverlay(){
+  state.scale=1;
+  state.rotation=0;
+  state.offsetX=window.innerWidth/2-150;
+  state.offsetY=window.innerHeight/2-150;
+  updateTransform();
+}
+
+// =========================
 // DRAG
 // =========================
 function startDrag(x,y){
@@ -335,8 +316,8 @@ function moveDrag(x,y){
   if(locked) return;
   if(!state.dragging) return;
 
-  state.offsetX += x - state.lastX;
-  state.offsetY += y - state.lastY;
+  state.offsetX += x-state.lastX;
+  state.offsetY += y-state.lastY;
 
   state.lastX=x;
   state.lastY=y;
@@ -370,28 +351,8 @@ overlay.addEventListener("touchmove",e=>{
 // LOCK
 // =========================
 document.getElementById("lockBtn").addEventListener("click",()=>{
-  playClick();
   locked=!locked;
-  document.getElementById("lockBtn").innerText = locked ? "Locked":"Lock";
-});
-
-// =========================
-// GRID
-// =========================
-let gridOn=false;
-
-document.getElementById("gridBtn").addEventListener("click",()=>{
-  playClick();
-  gridOn=!gridOn;
-  document.getElementById("grid").style.display =
-    gridOn ? "block":"none";
-});
-
-// =========================
-// OPACITY
-// =========================
-document.getElementById("opacity").addEventListener("input",e=>{
-  overlay.style.opacity = e.target.value;
+  document.getElementById("lockBtn").innerText = locked?"Locked":"Lock";
 });
 
 </script>
