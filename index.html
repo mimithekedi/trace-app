@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trace Tool Pro</title>
+<title>Trace Tool</title>
+
+<!-- FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
 
 /* =========================
-   🎮 PIXEL RETRO UI
+   BASE
 ========================= */
 
 body {
   margin: 0;
   overflow: hidden;
-  background: black;
+  background: #0f172a;
   font-family: 'Press Start 2P', monospace;
 }
 
-/* FONT */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-/* 📷 CAMERA */
+/* CAMERA */
 #video {
   position: fixed;
   width: 100%;
@@ -29,7 +29,7 @@ body {
   object-fit: cover;
 }
 
-/* 🖼 OVERLAY */
+/* OVERLAY */
 #overlay {
   position: absolute;
   width: 300px;
@@ -41,24 +41,31 @@ body {
   touch-action: none;
 }
 
-/* 🎛 CONTROL PANEL */
+/* =========================
+   UI PANEL
+========================= */
+
 #controls {
   position: fixed;
   bottom: 20px;
   left: 20px;
 
-  background: #111;
-  border: 4px solid #fff;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 14px;
 
   padding: 12px;
-
-  box-shadow: 6px 6px 0px #000;
 
   color: white;
   font-size: 10px;
 }
 
-/* 🔘 BUTTONS */
+/* =========================
+   BUTTONS (PASTEL RETRO)
+========================= */
+
 #buttons {
   position: fixed;
   top: 20px;
@@ -67,25 +74,48 @@ body {
   gap: 10px;
 }
 
-/* PIXEL BUTTON */
+/* shared button */
 button {
   font-family: 'Press Start 2P', monospace;
 
-  background: #ffcc00;
-  border: 4px solid #000;
+  border: none;
+  border-radius: 12px;
 
   padding: 10px;
   font-size: 10px;
 
-  box-shadow: 4px 4px 0px #000;
+  cursor: pointer;
+
+  box-shadow: 0 5px 0 rgba(0,0,0,0.4);
+  transition: 0.1s;
 }
 
 button:active {
-  transform: translate(2px,2px);
-  box-shadow: 2px 2px 0px #000;
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.4);
 }
 
-/* 📐 GRID */
+/* pastel variants */
+#lockBtn {
+  background: #fbcfe8; /* pink */
+  color: #3b0764;
+}
+
+#gridBtn {
+  background: #fde68a; /* yellow */
+  color: #3b2f00;
+}
+
+#file {
+  background: #bfdbfe; /* blue */
+  padding: 6px;
+  border-radius: 8px;
+}
+
+/* =========================
+   GRID
+========================= */
+
 #grid {
   position: fixed;
   width: 100%;
@@ -93,25 +123,25 @@ button:active {
   pointer-events: none;
 
   background-image:
-    linear-gradient(#ffffff10 1px, transparent 1px),
-    linear-gradient(90deg, #ffffff10 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
 
   background-size: 24px 24px;
 
   display: none;
 }
 
-/* 🏷 LOGO */
-#logo {
+/* =========================
+   CREDIT
+========================= */
+
+#credit {
   position: fixed;
-  top: 15px;
-  right: 15px;
+  bottom: 10px;
+  right: 12px;
 
-  width: 60px;
-  height: 60px;
-
-  border: 3px solid #000;
-  box-shadow: 4px 4px 0px #000;
+  font-size: 8px;
+  color: rgba(255,255,255,0.6);
 }
 
 </style>
@@ -121,33 +151,32 @@ button:active {
 
 <div id="grid"></div>
 
-<!-- 🏷 LOGO -->
-<img id="logo" src="logo.png" />
-
-<!-- 📷 CAMERA -->
+<!-- CAMERA -->
 <video id="video" autoplay playsinline></video>
 
-<!-- 🖼 IMAGE -->
+<!-- OVERLAY -->
 <img id="overlay" src="" />
 
-<!-- 🔘 BUTTONS -->
+<!-- BUTTONS -->
 <div id="buttons">
-  <button id="lockBtn">🔓 Lock</button>
-  <button id="gridBtn">▦ Grid</button>
+  <button id="lockBtn">Lock</button>
+  <button id="gridBtn">Grid</button>
+  <input type="file" id="file">
 </div>
 
-<!-- 🎛 CONTROLS -->
+<!-- CONTROLS -->
 <div id="controls">
-  <input type="file" id="file"><br><br>
-
-  Opacity:
+  Opacity<br><br>
   <input type="range" min="0" max="1" step="0.1" id="opacity">
 </div>
+
+<!-- CREDIT -->
+<div id="credit">developed by @mydailydoodles</div>
 
 <script>
 
 // =========================
-// 📷 CAMERA (arka kamera)
+// CAMERA (back camera)
 // =========================
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
@@ -155,9 +184,8 @@ navigator.mediaDevices.getUserMedia({
   document.getElementById("video").srcObject = stream;
 });
 
-
 // =========================
-// 🖼 IMAGE LOAD + RESET
+// IMAGE
 // =========================
 const file = document.getElementById("file");
 const overlay = document.getElementById("overlay");
@@ -176,14 +204,10 @@ file.addEventListener("change", e => {
   resetOverlay();
 });
 
-
-// =========================
-// 🎚 OPACITY
-// =========================
+// opacity
 document.getElementById("opacity").addEventListener("input", e => {
   overlay.style.opacity = e.target.value;
 });
-
 
 // =========================
 // STATE
@@ -200,10 +224,7 @@ let state = {
 
 let locked = false;
 
-
-// =========================
-// APPLY TRANSFORM
-// =========================
+// apply
 function updateTransform() {
   overlay.style.transform =
     `translate(${state.offsetX}px, ${state.offsetY}px)
@@ -211,9 +232,8 @@ function updateTransform() {
      rotate(${state.rotation}deg)`;
 }
 
-
 // =========================
-// ✋ DRAG
+// DRAG
 // =========================
 function startDrag(x, y) {
   if (locked) return;
@@ -226,11 +246,8 @@ function moveDrag(x, y) {
   if (locked) return;
   if (!state.dragging) return;
 
-  const dx = x - state.lastX;
-  const dy = y - state.lastY;
-
-  state.offsetX += dx;
-  state.offsetY += dy;
+  state.offsetX += x - state.lastX;
+  state.offsetY += y - state.lastY;
 
   state.lastX = x;
   state.lastY = y;
@@ -242,18 +259,10 @@ function endDrag() {
   state.dragging = false;
 }
 
-
 // mouse
-overlay.addEventListener("mousedown", e => {
-  startDrag(e.clientX, e.clientY);
-});
-
-document.addEventListener("mousemove", e => {
-  moveDrag(e.clientX, e.clientY);
-});
-
+overlay.addEventListener("mousedown", e => startDrag(e.clientX, e.clientY));
+document.addEventListener("mousemove", e => moveDrag(e.clientX, e.clientY));
 document.addEventListener("mouseup", endDrag);
-
 
 // touch
 overlay.addEventListener("touchstart", e => {
@@ -270,30 +279,26 @@ overlay.addEventListener("touchmove", e => {
   }
 });
 
-
 // =========================
-// 🔍 PINCH + ROTATION
+// PINCH + ROTATION
 // =========================
 let initialDistance = 0;
 let initialAngle = 0;
 let initialScale = 1;
 let initialRotation = 0;
 
-function getDistance(t1, t2) {
-  const dx = t1.clientX - t2.clientX;
-  const dy = t1.clientY - t2.clientY;
-  return Math.sqrt(dx*dx + dy*dy);
+function dist(t1,t2){
+  return Math.hypot(t1.clientX-t2.clientX, t1.clientY-t2.clientY);
 }
 
-function getAngle(t1, t2) {
-  return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
+function angle(t1,t2){
+  return Math.atan2(t2.clientY-t1.clientY, t2.clientX-t1.clientX) * 180 / Math.PI;
 }
 
 overlay.addEventListener("touchstart", e => {
   if (e.touches.length === 2) {
-    initialDistance = getDistance(e.touches[0], e.touches[1]);
-    initialAngle = getAngle(e.touches[0], e.touches[1]);
-
+    initialDistance = dist(e.touches[0], e.touches[1]);
+    initialAngle = angle(e.touches[0], e.touches[1]);
     initialScale = state.scale;
     initialRotation = state.rotation;
   }
@@ -303,10 +308,10 @@ overlay.addEventListener("touchmove", e => {
   if (locked) return;
 
   if (e.touches.length === 2) {
-    const newDistance = getDistance(e.touches[0], e.touches[1]);
-    const newAngle = getAngle(e.touches[0], e.touches[1]);
+    const newDist = dist(e.touches[0], e.touches[1]);
+    const newAngle = angle(e.touches[0], e.touches[1]);
 
-    state.scale = initialScale * (newDistance / initialDistance);
+    state.scale = initialScale * (newDist / initialDistance);
     state.rotation = initialRotation + (newAngle - initialAngle);
 
     updateTransform();
@@ -315,19 +320,16 @@ overlay.addEventListener("touchmove", e => {
 
 overlay.addEventListener("touchend", endDrag);
 
-
 // =========================
-// 🔒 LOCK BUTTON
+// LOCK
 // =========================
 document.getElementById("lockBtn").addEventListener("click", () => {
   locked = !locked;
-  document.getElementById("lockBtn").innerText =
-    locked ? "🔒 Locked" : "🔓 Lock";
+  document.getElementById("lockBtn").innerText = locked ? "Locked" : "Lock";
 });
 
-
 // =========================
-// ▦ GRID BUTTON
+// GRID
 // =========================
 let gridOn = false;
 
