@@ -10,17 +10,90 @@
 <style>
 
 /* =========================
-   BASE
+   GLOBAL
 ========================= */
 
 body {
   margin: 0;
   overflow: hidden;
-  background: #0f172a;
   font-family: 'Press Start 2P', monospace;
+  background: #0f172a;
 }
 
-/* CAMERA */
+/* =========================
+   START SCREEN (ONLY HERE)
+========================= */
+
+#startScreen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+
+  background: radial-gradient(circle at center, #fff7c2, #fde68a);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999;
+  color: #1f2937;
+
+  text-align: center;
+  transition: opacity 0.6s ease;
+}
+
+/* chibi pen */
+#chibiPen {
+  font-size: 48px;
+  margin-bottom: 15px;
+  animation: floatPen 2.2s ease-in-out infinite;
+}
+
+@keyframes floatPen {
+  0%   { transform: translateY(0px) rotate(-4deg); }
+  50%  { transform: translateY(-6px) rotate(4deg); }
+  100% { transform: translateY(0px) rotate(-4deg); }
+}
+
+/* title */
+#title {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+/* tap hint */
+#hint {
+  font-size: 10px;
+  opacity: 0.7;
+  animation: floatHint 1.2s infinite alternate;
+}
+
+@keyframes floatHint {
+  0% { transform: translateY(0px); opacity: 0.4; }
+  100% { transform: translateY(4px); opacity: 0.9; }
+}
+
+/* credit */
+#startCredit {
+  position: absolute;
+  bottom: 18px;
+  font-size: 8px;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
+/* fade out */
+#startScreen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* =========================
+   APP (TRACE MODE)
+========================= */
+
+/* camera */
 #video {
   position: fixed;
   width: 100%;
@@ -28,7 +101,7 @@ body {
   object-fit: cover;
 }
 
-/* OVERLAY */
+/* overlay image */
 #overlay {
   position: absolute;
   width: 300px;
@@ -36,73 +109,10 @@ body {
   left: 100px;
 
   opacity: 0.5;
-  transform-origin: center;
   touch-action: none;
 }
 
-/* =========================
-   UI
-========================= */
-
-#controls {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
-
-  border-radius: 14px;
-  padding: 12px;
-
-  color: white;
-  font-size: 10px;
-}
-
-/* BUTTON LAYOUT */
-#buttons {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-
-  display: flex;
-  gap: 10px;
-}
-
-/* BUTTON BASE */
-button {
-  font-family: 'Press Start 2P', monospace;
-
-  font-size: 10px;
-  line-height: 1;
-  white-space: nowrap;
-
-  min-width: 90px;
-  height: 36px;
-
-  border: none;
-  border-radius: 12px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  box-shadow: 0 5px 0 rgba(0,0,0,0.4);
-
-  transition: 0.1s;
-}
-
-button:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.4);
-}
-
-/* pastel colors */
-#lockBtn { background: #fbcfe8; color: #3b0764; }
-#gridBtn { background: #fde68a; color: #3b2f00; }
-#fileBtn { background: #bfdbfe; color: #1e3a8a; }
-
-/* GRID */
+/* grid */
 #grid {
   position: fixed;
   width: 100%;
@@ -118,13 +128,59 @@ button:active {
   display: none;
 }
 
-/* CREDIT */
+/* =========================
+   UI BUTTONS
+========================= */
+
+#buttons {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+button {
+  font-family: 'Press Start 2P', monospace;
+
+  font-size: 10px;
+  min-width: 90px;
+  height: 36px;
+
+  border: none;
+  border-radius: 12px;
+
+  box-shadow: 0 5px 0 rgba(0,0,0,0.4);
+}
+
+#lockBtn { background:#fbcfe8; }
+#gridBtn { background:#fde68a; }
+#fileBtn { background:#bfdbfe; }
+
+/* opacity */
+#controls {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+
+  padding: 10px;
+  border-radius: 12px;
+
+  color: white;
+  font-size: 10px;
+}
+
+/* credit */
 #credit {
   position: fixed;
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-
   font-size: 8px;
   color: rgba(255,255,255,0.5);
 }
@@ -134,58 +190,82 @@ button:active {
 
 <body>
 
+<!-- 🎬 START SCREEN -->
+<div id="startScreen">
+
+  <div id="chibiPen">✏️</div>
+
+  <div id="title">trace your art!</div>
+
+  <div id="hint">tap to start</div>
+
+  <div id="startCredit">
+    developed by<br>
+    ©mydailydoodles<br>
+    2026
+  </div>
+
+</div>
+
+<!-- TRACE APP -->
 <div id="grid"></div>
 
-<!-- CAMERA -->
 <video id="video" autoplay playsinline></video>
 
-<!-- OVERLAY -->
 <img id="overlay" src="" />
 
-<!-- BUTTONS -->
 <div id="buttons">
   <button id="lockBtn">Lock</button>
   <button id="gridBtn">Grid</button>
-  <button id="fileBtn">Load Image</button>
+  <button id="fileBtn">Load</button>
 </div>
 
-<!-- OPACITY -->
 <div id="controls">
   Opacity<br><br>
   <input type="range" min="0" max="1" step="0.1" id="opacity">
 </div>
 
-<!-- CREDIT -->
 <div id="credit">developed by @mydailydoodles</div>
-
-<!-- 🔊 CLICK SOUND -->
-<audio id="clickSound" src="click.mp3" preload="auto"></audio>
 
 <script>
 
 // =========================
-// CLICK SOUND
+// START SCREEN
 // =========================
-function playClick() {
-  const s = document.getElementById("clickSound");
-  if (!s) return;
-  s.currentTime = 0;
-  s.play().catch(()=>{});
-}
+const startScreen = document.getElementById("startScreen");
 
+startScreen.addEventListener("click", () => {
+
+  playClick();
+
+  startScreen.classList.add("hidden");
+
+  setTimeout(() => {
+    initCamera();
+  }, 400);
+
+});
+
+// =========================
+// CLICK SOUND (placeholder)
+// =========================
+function playClick(){
+  // later mp3 ekleriz
+}
 
 // =========================
 // CAMERA
 // =========================
-navigator.mediaDevices.getUserMedia({
-  video: { facingMode: "environment" }
-}).then(stream => {
-  document.getElementById("video").srcObject = stream;
-});
-
+function initCamera(){
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  }).then(stream => {
+    document.getElementById("video").srcObject = stream;
+  });
+}
 
 // =========================
-// IMAGE
+// FILE INPUT (hidden real input)
 // =========================
 const file = document.createElement("input");
 file.type = "file";
@@ -194,160 +274,106 @@ document.body.appendChild(file);
 
 const overlay = document.getElementById("overlay");
 
-function resetOverlay() {
-  state.scale = 1;
-  state.rotation = 0;
-  state.offsetX = window.innerWidth / 2 - 150;
-  state.offsetY = window.innerHeight / 2 - 150;
-  updateTransform();
-}
-
 file.addEventListener("change", e => {
-  playClick();
   const img = e.target.files[0];
   overlay.src = URL.createObjectURL(img);
   resetOverlay();
 });
 
-// file button
 document.getElementById("fileBtn").addEventListener("click", () => {
   playClick();
   file.click();
 });
 
-
 // =========================
-// OPACITY
+// OVERLAY RESET
 // =========================
-document.getElementById("opacity").addEventListener("input", e => {
-  overlay.style.opacity = e.target.value;
-});
-
+function resetOverlay(){
+  state.scale = 1;
+  state.rotation = 0;
+  state.offsetX = window.innerWidth/2 - 150;
+  state.offsetY = window.innerHeight/2 - 150;
+  updateTransform();
+}
 
 // =========================
 // STATE
 // =========================
 let state = {
-  dragging: false,
-  scale: 1,
-  rotation: 0,
-  lastX: 0,
-  lastY: 0,
-  offsetX: 100,
-  offsetY: 150
+  dragging:false,
+  scale:1,
+  rotation:0,
+  lastX:0,
+  lastY:0,
+  offsetX:100,
+  offsetY:150
 };
 
-let locked = false;
-
+let locked=false;
 
 // =========================
 // TRANSFORM
 // =========================
-function updateTransform() {
+function updateTransform(){
   overlay.style.transform =
-    `translate(${state.offsetX}px, ${state.offsetY}px)
-     scale(${state.scale})
-     rotate(${state.rotation}deg)`;
+  `translate(${state.offsetX}px,${state.offsetY}px)
+   scale(${state.scale})
+   rotate(${state.rotation}deg)`;
 }
-
 
 // =========================
 // DRAG
 // =========================
 function startDrag(x,y){
-  if (locked) return;
-  state.dragging = true;
-  state.lastX = x;
-  state.lastY = y;
+  if(locked) return;
+  state.dragging=true;
+  state.lastX=x;
+  state.lastY=y;
 }
 
 function moveDrag(x,y){
-  if (locked) return;
-  if (!state.dragging) return;
+  if(locked) return;
+  if(!state.dragging) return;
 
   state.offsetX += x - state.lastX;
   state.offsetY += y - state.lastY;
 
-  state.lastX = x;
-  state.lastY = y;
+  state.lastX=x;
+  state.lastY=y;
 
   updateTransform();
 }
 
-function endDrag(){
-  state.dragging = false;
-}
-
+function endDrag(){ state.dragging=false; }
 
 // mouse
-overlay.addEventListener("mousedown", e => startDrag(e.clientX,e.clientY));
-document.addEventListener("mousemove", e => moveDrag(e.clientX,e.clientY));
-document.addEventListener("mouseup", endDrag);
+overlay.addEventListener("mousedown",e=>startDrag(e.clientX,e.clientY));
+document.addEventListener("mousemove",e=>moveDrag(e.clientX,e.clientY));
+document.addEventListener("mouseup",endDrag);
 
 // touch
-overlay.addEventListener("touchstart", e => {
-  if (e.touches.length === 1) {
-    const t = e.touches[0];
+overlay.addEventListener("touchstart",e=>{
+  if(e.touches.length===1){
+    let t=e.touches[0];
     startDrag(t.clientX,t.clientY);
   }
 });
 
-overlay.addEventListener("touchmove", e => {
-  if (e.touches.length === 1) {
-    const t = e.touches[0];
+overlay.addEventListener("touchmove",e=>{
+  if(e.touches.length===1){
+    let t=e.touches[0];
     moveDrag(t.clientX,t.clientY);
   }
 });
-
-
-// =========================
-// PINCH + ROTATION
-// =========================
-let d0=0,a0=0,s0=1,r0=0;
-
-function dist(t1,t2){
-  return Math.hypot(t1.clientX-t2.clientX, t1.clientY-t2.clientY);
-}
-
-function angle(t1,t2){
-  return Math.atan2(t2.clientY-t1.clientY, t2.clientX-t1.clientX)*180/Math.PI;
-}
-
-overlay.addEventListener("touchstart", e=>{
-  if (e.touches.length===2){
-    d0=dist(e.touches[0],e.touches[1]);
-    a0=angle(e.touches[0],e.touches[1]);
-    s0=state.scale;
-    r0=state.rotation;
-  }
-});
-
-overlay.addEventListener("touchmove", e=>{
-  if (locked) return;
-
-  if (e.touches.length===2){
-    let d=dist(e.touches[0],e.touches[1]);
-    let a=angle(e.touches[0],e.touches[1]);
-
-    state.scale = s0*(d/d0);
-    state.rotation = r0+(a-a0);
-
-    updateTransform();
-  }
-});
-
-overlay.addEventListener("touchend", endDrag);
-
 
 // =========================
 // LOCK
 // =========================
 document.getElementById("lockBtn").addEventListener("click",()=>{
   playClick();
-  locked = !locked;
-  document.getElementById("lockBtn").innerText = locked ? "Locked" : "Lock";
+  locked=!locked;
+  document.getElementById("lockBtn").innerText = locked ? "Locked":"Lock";
 });
-
 
 // =========================
 // GRID
@@ -357,7 +383,15 @@ let gridOn=false;
 document.getElementById("gridBtn").addEventListener("click",()=>{
   playClick();
   gridOn=!gridOn;
-  document.getElementById("grid").style.display = gridOn ? "block":"none";
+  document.getElementById("grid").style.display =
+    gridOn ? "block":"none";
+});
+
+// =========================
+// OPACITY
+// =========================
+document.getElementById("opacity").addEventListener("input",e=>{
+  overlay.style.opacity = e.target.value;
 });
 
 </script>
