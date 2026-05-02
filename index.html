@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trace Tool</title>
 
-<!-- FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
@@ -42,7 +41,7 @@ body {
 }
 
 /* =========================
-   UI PANEL
+   UI
 ========================= */
 
 #controls {
@@ -53,40 +52,43 @@ body {
   background: rgba(255,255,255,0.12);
   backdrop-filter: blur(12px);
 
-  border: 2px solid rgba(255,255,255,0.2);
   border-radius: 14px;
-
   padding: 12px;
 
   color: white;
   font-size: 10px;
 }
 
-/* =========================
-   BUTTONS (PASTEL RETRO)
-========================= */
-
+/* BUTTON LAYOUT */
 #buttons {
   position: fixed;
   top: 20px;
   left: 20px;
+
   display: flex;
   gap: 10px;
 }
 
-/* shared button */
+/* BUTTON BASE */
 button {
   font-family: 'Press Start 2P', monospace;
+
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+
+  min-width: 90px;
+  height: 36px;
 
   border: none;
   border-radius: 12px;
 
-  padding: 10px;
-  font-size: 10px;
-
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   box-shadow: 0 5px 0 rgba(0,0,0,0.4);
+
   transition: 0.1s;
 }
 
@@ -95,27 +97,12 @@ button:active {
   box-shadow: 0 2px 0 rgba(0,0,0,0.4);
 }
 
-/* pastel variants */
-#lockBtn {
-  background: #fbcfe8; /* pink */
-  color: #3b0764;
-}
+/* pastel colors */
+#lockBtn { background: #fbcfe8; color: #3b0764; }
+#gridBtn { background: #fde68a; color: #3b2f00; }
+#fileBtn { background: #bfdbfe; color: #1e3a8a; }
 
-#gridBtn {
-  background: #fde68a; /* yellow */
-  color: #3b2f00;
-}
-
-#file {
-  background: #bfdbfe; /* blue */
-  padding: 6px;
-  border-radius: 8px;
-}
-
-/* =========================
-   GRID
-========================= */
-
+/* GRID */
 #grid {
   position: fixed;
   width: 100%;
@@ -123,25 +110,23 @@ button:active {
   pointer-events: none;
 
   background-image:
-    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    linear-gradient(#ffffff10 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff10 1px, transparent 1px);
 
   background-size: 24px 24px;
 
   display: none;
 }
 
-/* =========================
-   CREDIT
-========================= */
-
+/* CREDIT */
 #credit {
   position: fixed;
   bottom: 10px;
-  right: 12px;
+  left: 50%;
+  transform: translateX(-50%);
 
   font-size: 8px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.5);
 }
 
 </style>
@@ -161,10 +146,10 @@ button:active {
 <div id="buttons">
   <button id="lockBtn">Lock</button>
   <button id="gridBtn">Grid</button>
-  <input type="file" id="file">
+  <button id="fileBtn">Load Image</button>
 </div>
 
-<!-- CONTROLS -->
+<!-- OPACITY -->
 <div id="controls">
   Opacity<br><br>
   <input type="range" min="0" max="1" step="0.1" id="opacity">
@@ -173,10 +158,24 @@ button:active {
 <!-- CREDIT -->
 <div id="credit">developed by @mydailydoodles</div>
 
+<!-- 🔊 CLICK SOUND -->
+<audio id="clickSound" src="click.mp3" preload="auto"></audio>
+
 <script>
 
 // =========================
-// CAMERA (back camera)
+// CLICK SOUND
+// =========================
+function playClick() {
+  const s = document.getElementById("clickSound");
+  if (!s) return;
+  s.currentTime = 0;
+  s.play().catch(()=>{});
+}
+
+
+// =========================
+// CAMERA
 // =========================
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
@@ -184,30 +183,46 @@ navigator.mediaDevices.getUserMedia({
   document.getElementById("video").srcObject = stream;
 });
 
+
 // =========================
 // IMAGE
 // =========================
-const file = document.getElementById("file");
+const file = document.createElement("input");
+file.type = "file";
+file.style.display = "none";
+document.body.appendChild(file);
+
 const overlay = document.getElementById("overlay");
 
 function resetOverlay() {
   state.scale = 1;
   state.rotation = 0;
-  state.offsetX = 100;
-  state.offsetY = 150;
+  state.offsetX = window.innerWidth / 2 - 150;
+  state.offsetY = window.innerHeight / 2 - 150;
   updateTransform();
 }
 
 file.addEventListener("change", e => {
+  playClick();
   const img = e.target.files[0];
   overlay.src = URL.createObjectURL(img);
   resetOverlay();
 });
 
-// opacity
+// file button
+document.getElementById("fileBtn").addEventListener("click", () => {
+  playClick();
+  file.click();
+});
+
+
+// =========================
+// OPACITY
+// =========================
 document.getElementById("opacity").addEventListener("input", e => {
   overlay.style.opacity = e.target.value;
 });
+
 
 // =========================
 // STATE
@@ -224,7 +239,10 @@ let state = {
 
 let locked = false;
 
-// apply
+
+// =========================
+// TRANSFORM
+// =========================
 function updateTransform() {
   overlay.style.transform =
     `translate(${state.offsetX}px, ${state.offsetY}px)
@@ -232,17 +250,18 @@ function updateTransform() {
      rotate(${state.rotation}deg)`;
 }
 
+
 // =========================
 // DRAG
 // =========================
-function startDrag(x, y) {
+function startDrag(x,y){
   if (locked) return;
   state.dragging = true;
   state.lastX = x;
   state.lastY = y;
 }
 
-function moveDrag(x, y) {
+function moveDrag(x,y){
   if (locked) return;
   if (!state.dragging) return;
 
@@ -255,64 +274,63 @@ function moveDrag(x, y) {
   updateTransform();
 }
 
-function endDrag() {
+function endDrag(){
   state.dragging = false;
 }
 
+
 // mouse
-overlay.addEventListener("mousedown", e => startDrag(e.clientX, e.clientY));
-document.addEventListener("mousemove", e => moveDrag(e.clientX, e.clientY));
+overlay.addEventListener("mousedown", e => startDrag(e.clientX,e.clientY));
+document.addEventListener("mousemove", e => moveDrag(e.clientX,e.clientY));
 document.addEventListener("mouseup", endDrag);
 
 // touch
 overlay.addEventListener("touchstart", e => {
   if (e.touches.length === 1) {
     const t = e.touches[0];
-    startDrag(t.clientX, t.clientY);
+    startDrag(t.clientX,t.clientY);
   }
 });
 
 overlay.addEventListener("touchmove", e => {
   if (e.touches.length === 1) {
     const t = e.touches[0];
-    moveDrag(t.clientX, t.clientY);
+    moveDrag(t.clientX,t.clientY);
   }
 });
+
 
 // =========================
 // PINCH + ROTATION
 // =========================
-let initialDistance = 0;
-let initialAngle = 0;
-let initialScale = 1;
-let initialRotation = 0;
+let d0=0,a0=0,s0=1,r0=0;
 
 function dist(t1,t2){
   return Math.hypot(t1.clientX-t2.clientX, t1.clientY-t2.clientY);
 }
 
 function angle(t1,t2){
-  return Math.atan2(t2.clientY-t1.clientY, t2.clientX-t1.clientX) * 180 / Math.PI;
+  return Math.atan2(t2.clientY-t1.clientY, t2.clientX-t1.clientX)*180/Math.PI;
 }
 
-overlay.addEventListener("touchstart", e => {
-  if (e.touches.length === 2) {
-    initialDistance = dist(e.touches[0], e.touches[1]);
-    initialAngle = angle(e.touches[0], e.touches[1]);
-    initialScale = state.scale;
-    initialRotation = state.rotation;
+overlay.addEventListener("touchstart", e=>{
+  if (e.touches.length===2){
+    d0=dist(e.touches[0],e.touches[1]);
+    a0=angle(e.touches[0],e.touches[1]);
+    s0=state.scale;
+    r0=state.rotation;
   }
 });
 
-overlay.addEventListener("touchmove", e => {
+overlay.addEventListener("touchmove", e=>{
   if (locked) return;
 
-  if (e.touches.length === 2) {
-    const newDist = dist(e.touches[0], e.touches[1]);
-    const newAngle = angle(e.touches[0], e.touches[1]);
+  if (e.touches.length===2){
+    let d=dist(e.touches[0],e.touches[1]);
+    let a=angle(e.touches[0],e.touches[1]);
 
-    state.scale = initialScale * (newDist / initialDistance);
-    state.rotation = initialRotation + (newAngle - initialAngle);
+    state.scale = s0*(d/d0);
+    state.rotation = r0+(a-a0);
 
     updateTransform();
   }
@@ -320,23 +338,26 @@ overlay.addEventListener("touchmove", e => {
 
 overlay.addEventListener("touchend", endDrag);
 
+
 // =========================
 // LOCK
 // =========================
-document.getElementById("lockBtn").addEventListener("click", () => {
+document.getElementById("lockBtn").addEventListener("click",()=>{
+  playClick();
   locked = !locked;
   document.getElementById("lockBtn").innerText = locked ? "Locked" : "Lock";
 });
 
+
 // =========================
 // GRID
 // =========================
-let gridOn = false;
+let gridOn=false;
 
-document.getElementById("gridBtn").addEventListener("click", () => {
-  gridOn = !gridOn;
-  document.getElementById("grid").style.display =
-    gridOn ? "block" : "none";
+document.getElementById("gridBtn").addEventListener("click",()=>{
+  playClick();
+  gridOn=!gridOn;
+  document.getElementById("grid").style.display = gridOn ? "block":"none";
 });
 
 </script>
