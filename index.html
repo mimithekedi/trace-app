@@ -6,12 +6,20 @@
 <title>Trace Tool Pro</title>
 
 <style>
+
+/* =========================
+   🎮 PIXEL RETRO UI
+========================= */
+
 body {
   margin: 0;
   overflow: hidden;
   background: black;
-  font-family: -apple-system, BlinkMacSystemFont;
+  font-family: 'Press Start 2P', monospace;
 }
+
+/* FONT */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 /* 📷 CAMERA */
 #video {
@@ -29,25 +37,25 @@ body {
   left: 100px;
 
   opacity: 0.5;
-  transform-origin: center center;
+  transform-origin: center;
   touch-action: none;
 }
 
-/* 🎛 UI */
+/* 🎛 CONTROL PANEL */
 #controls {
   position: fixed;
   bottom: 20px;
   left: 20px;
 
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(10px);
+  background: #111;
+  border: 4px solid #fff;
 
   padding: 12px;
-  border-radius: 16px;
 
-  font-size: 14px;
+  box-shadow: 6px 6px 0px #000;
 
-  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  color: white;
+  font-size: 10px;
 }
 
 /* 🔘 BUTTONS */
@@ -59,13 +67,22 @@ body {
   gap: 10px;
 }
 
+/* PIXEL BUTTON */
 button {
-  border: none;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: white;
-  font-size: 14px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  font-family: 'Press Start 2P', monospace;
+
+  background: #ffcc00;
+  border: 4px solid #000;
+
+  padding: 10px;
+  font-size: 10px;
+
+  box-shadow: 4px 4px 0px #000;
+}
+
+button:active {
+  transform: translate(2px,2px);
+  box-shadow: 2px 2px 0px #000;
 }
 
 /* 📐 GRID */
@@ -76,13 +93,27 @@ button {
   pointer-events: none;
 
   background-image:
-    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+    linear-gradient(#ffffff10 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff10 1px, transparent 1px);
 
-  background-size: 20px 20px;
+  background-size: 24px 24px;
 
   display: none;
 }
+
+/* 🏷 LOGO */
+#logo {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+
+  width: 60px;
+  height: 60px;
+
+  border: 3px solid #000;
+  box-shadow: 4px 4px 0px #000;
+}
+
 </style>
 </head>
 
@@ -90,14 +121,22 @@ button {
 
 <div id="grid"></div>
 
+<!-- 🏷 LOGO -->
+<img id="logo" src="logo.png" />
+
+<!-- 📷 CAMERA -->
 <video id="video" autoplay playsinline></video>
+
+<!-- 🖼 IMAGE -->
 <img id="overlay" src="" />
 
+<!-- 🔘 BUTTONS -->
 <div id="buttons">
   <button id="lockBtn">🔓 Lock</button>
   <button id="gridBtn">▦ Grid</button>
 </div>
 
+<!-- 🎛 CONTROLS -->
 <div id="controls">
   <input type="file" id="file"><br><br>
 
@@ -107,14 +146,19 @@ button {
 
 <script>
 
+// =========================
 // 📷 CAMERA (arka kamera)
+// =========================
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
 }).then(stream => {
   document.getElementById("video").srcObject = stream;
 });
 
-// 🖼 IMAGE
+
+// =========================
+// 🖼 IMAGE LOAD + RESET
+// =========================
 const file = document.getElementById("file");
 const overlay = document.getElementById("overlay");
 
@@ -132,15 +176,18 @@ file.addEventListener("change", e => {
   resetOverlay();
 });
 
+
+// =========================
 // 🎚 OPACITY
+// =========================
 document.getElementById("opacity").addEventListener("input", e => {
   overlay.style.opacity = e.target.value;
 });
 
 
-// =======================
+// =========================
 // STATE
-// =======================
+// =========================
 let state = {
   dragging: false,
   scale: 1,
@@ -153,7 +200,10 @@ let state = {
 
 let locked = false;
 
-// 📌 APPLY
+
+// =========================
+// APPLY TRANSFORM
+// =========================
 function updateTransform() {
   overlay.style.transform =
     `translate(${state.offsetX}px, ${state.offsetY}px)
@@ -162,9 +212,9 @@ function updateTransform() {
 }
 
 
-// =======================
-// DRAG
-// =======================
+// =========================
+// ✋ DRAG
+// =========================
 function startDrag(x, y) {
   if (locked) return;
   state.dragging = true;
@@ -205,7 +255,7 @@ document.addEventListener("mousemove", e => {
 document.addEventListener("mouseup", endDrag);
 
 
-// touch drag
+// touch
 overlay.addEventListener("touchstart", e => {
   if (e.touches.length === 1) {
     const t = e.touches[0];
@@ -221,9 +271,9 @@ overlay.addEventListener("touchmove", e => {
 });
 
 
-// =======================
-// PINCH + ROTATION
-// =======================
+// =========================
+// 🔍 PINCH + ROTATION
+// =========================
 let initialDistance = 0;
 let initialAngle = 0;
 let initialScale = 1;
@@ -266,9 +316,9 @@ overlay.addEventListener("touchmove", e => {
 overlay.addEventListener("touchend", endDrag);
 
 
-// =======================
-// LOCK BUTTON
-// =======================
+// =========================
+// 🔒 LOCK BUTTON
+// =========================
 document.getElementById("lockBtn").addEventListener("click", () => {
   locked = !locked;
   document.getElementById("lockBtn").innerText =
@@ -276,9 +326,9 @@ document.getElementById("lockBtn").addEventListener("click", () => {
 });
 
 
-// =======================
-// GRID BUTTON
-// =======================
+// =========================
+// ▦ GRID BUTTON
+// =========================
 let gridOn = false;
 
 document.getElementById("gridBtn").addEventListener("click", () => {
