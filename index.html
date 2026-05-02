@@ -10,8 +10,10 @@ body {
   margin: 0;
   overflow: hidden;
   background: black;
+  font-family: -apple-system, BlinkMacSystemFont;
 }
 
+/* 📷 CAMERA */
 #video {
   position: fixed;
   width: 100%;
@@ -19,6 +21,7 @@ body {
   object-fit: cover;
 }
 
+/* 🖼 OVERLAY */
 #overlay {
   position: absolute;
   width: 300px;
@@ -26,29 +29,74 @@ body {
   left: 100px;
 
   opacity: 0.5;
-
   transform-origin: center center;
-
-  touch-action: none; /* 👈 kritik */
+  touch-action: none;
 }
 
+/* 🎛 UI */
 #controls {
   position: fixed;
   bottom: 20px;
   left: 20px;
+
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(10px);
+
+  padding: 12px;
+  border-radius: 16px;
+
+  font-size: 14px;
+
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+
+/* 🔘 BUTTONS */
+#buttons {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  border-radius: 999px;
   background: white;
-  padding: 10px;
-  border-radius: 10px;
-  z-index: 10;
+  font-size: 14px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+/* 📐 GRID */
+#grid {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+
+  background-size: 20px 20px;
+
+  display: none;
 }
 </style>
 </head>
 
 <body>
 
-<video id="video" autoplay playsinline></video>
+<div id="grid"></div>
 
+<video id="video" autoplay playsinline></video>
 <img id="overlay" src="" />
+
+<div id="buttons">
+  <button id="lockBtn">🔓 Lock</button>
+  <button id="gridBtn">▦ Grid</button>
+</div>
 
 <div id="controls">
   <input type="file" id="file"><br><br>
@@ -59,23 +107,29 @@ body {
 
 <script>
 
-// 📷 CAMERA
+// 📷 CAMERA (arka kamera)
 navigator.mediaDevices.getUserMedia({
-  video: {
-    facingMode: { exact: "environment" }
-  }
-})
-.then(stream => {
+  video: { facingMode: "environment" }
+}).then(stream => {
   document.getElementById("video").srcObject = stream;
 });
 
-// 🖼 IMAGE LOAD
+// 🖼 IMAGE
 const file = document.getElementById("file");
 const overlay = document.getElementById("overlay");
+
+function resetOverlay() {
+  state.scale = 1;
+  state.rotation = 0;
+  state.offsetX = 100;
+  state.offsetY = 150;
+  updateTransform();
+}
 
 file.addEventListener("change", e => {
   const img = e.target.files[0];
   overlay.src = URL.createObjectURL(img);
+  resetOverlay();
 });
 
 // 🎚 OPACITY
@@ -84,10 +138,9 @@ document.getElementById("opacity").addEventListener("input", e => {
 });
 
 
-// ===========================
-// ✋ DRAG + PINCH + ROTATION
-// ===========================
-
+// =======================
+// STATE
+// =======================
 let state = {
   dragging: false,
   scale: 1,
@@ -98,7 +151,9 @@ let state = {
   offsetY: 150
 };
 
-// 📌 APPLY TRANSFORM
+let locked = false;
+
+// 📌 APPLY
 function updateTransform() {
   overlay.style.transform =
     `translate(${state.offsetX}px, ${state.offsetY}px)
@@ -106,17 +161,19 @@ function updateTransform() {
      rotate(${state.rotation}deg)`;
 }
 
-// ===========================
-// 🖱 / ✋ DRAG (mouse + touch)
-// ===========================
 
+// =======================
+// DRAG
+// =======================
 function startDrag(x, y) {
+  if (locked) return;
   state.dragging = true;
   state.lastX = x;
   state.lastY = y;
 }
 
 function moveDrag(x, y) {
+  if (locked) return;
   if (!state.dragging) return;
 
   const dx = x - state.lastX;
@@ -135,6 +192,7 @@ function endDrag() {
   state.dragging = false;
 }
 
+
 // mouse
 overlay.addEventListener("mousedown", e => {
   startDrag(e.clientX, e.clientY);
@@ -146,7 +204,8 @@ document.addEventListener("mousemove", e => {
 
 document.addEventListener("mouseup", endDrag);
 
-// touch
+
+// touch drag
 overlay.addEventListener("touchstart", e => {
   if (e.touches.length === 1) {
     const t = e.touches[0];
@@ -161,10 +220,10 @@ overlay.addEventListener("touchmove", e => {
   }
 });
 
-// ===========================
-// 🔍 PINCH + 🔄 ROTATION
-// ===========================
 
+// =======================
+// PINCH + ROTATION
+// =======================
 let initialDistance = 0;
 let initialAngle = 0;
 let initialScale = 1;
@@ -173,7 +232,7 @@ let initialRotation = 0;
 function getDistance(t1, t2) {
   const dx = t1.clientX - t2.clientX;
   const dy = t1.clientY - t2.clientY;
-  return Math.sqrt(dx * dx + dy * dy);
+  return Math.sqrt(dx*dx + dy*dy);
 }
 
 function getAngle(t1, t2) {
@@ -184,21 +243,20 @@ overlay.addEventListener("touchstart", e => {
   if (e.touches.length === 2) {
     initialDistance = getDistance(e.touches[0], e.touches[1]);
     initialAngle = getAngle(e.touches[0], e.touches[1]);
+
     initialScale = state.scale;
     initialRotation = state.rotation;
   }
 });
 
 overlay.addEventListener("touchmove", e => {
-  if (e.touches.length === 2) {
+  if (locked) return;
 
+  if (e.touches.length === 2) {
     const newDistance = getDistance(e.touches[0], e.touches[1]);
     const newAngle = getAngle(e.touches[0], e.touches[1]);
 
-    // 🔍 zoom
     state.scale = initialScale * (newDistance / initialDistance);
-
-    // 🔄 rotation
     state.rotation = initialRotation + (newAngle - initialAngle);
 
     updateTransform();
@@ -206,6 +264,28 @@ overlay.addEventListener("touchmove", e => {
 });
 
 overlay.addEventListener("touchend", endDrag);
+
+
+// =======================
+// LOCK BUTTON
+// =======================
+document.getElementById("lockBtn").addEventListener("click", () => {
+  locked = !locked;
+  document.getElementById("lockBtn").innerText =
+    locked ? "🔒 Locked" : "🔓 Lock";
+});
+
+
+// =======================
+// GRID BUTTON
+// =======================
+let gridOn = false;
+
+document.getElementById("gridBtn").addEventListener("click", () => {
+  gridOn = !gridOn;
+  document.getElementById("grid").style.display =
+    gridOn ? "block" : "none";
+});
 
 </script>
 
