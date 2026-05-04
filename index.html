@@ -176,7 +176,7 @@ function playClick(){
   clickSound.play().catch(()=>{});
 }
 
-// 🎬 START BUTTON
+// 🎬 START
 document.getElementById("startBtn").onclick = async (e) => {
   e.preventDefault();
   playClick();
@@ -190,10 +190,86 @@ document.getElementById("startBtn").onclick = async (e) => {
     alert("Camera error");
   }
 };
-  
-  update();
+
+  async function initCamera(){
+  const video = document.getElementById("camera");
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  });
+
+  video.srcObject = stream;
+}
+
+let startX, startY;
+let startDist, startScale;
+let startAngle, startRotation;
 }, { passive: true });
 }
+
+overlay.addEventListener("touchstart", e => {
+  if (locked) return;
+
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    startX = t.clientX - state.x;
+    startY = t.clientY - state.y;
+  }
+
+  if (e.touches.length === 2) {
+    startDist = getDist(e.touches[0], e.touches[1]);
+    startAngle = getAngle(e.touches[0], e.touches[1]);
+
+    startScale = state.scale;
+    startRotation = state.rotation;
+  }
+}, { passive: true });
+
+overlay.addEventListener("touchmove", e => {
+  if (locked) return;
+
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    state.x = t.clientX - startX;
+    state.y = t.clientY - startY;
+  }
+
+  if (e.touches.length === 2) {
+    const t1 = e.touches[0];
+    const t2 = e.touches[1];
+
+    let newDist = getDist(t1, t2);
+    let newAngle = getAngle(t1, t2);
+
+    state.scale = startScale * (newDist / startDist);
+    state.rotation = startRotation + (newAngle - startAngle);
+  }
+
+  update();
+}, { passive: true });
+
+function getDist(t1,t2){
+  return Math.hypot(
+    t1.clientX - t2.clientX,
+    t1.clientY - t2.clientY
+  );
+}
+
+function getAngle(t1,t2){
+  return Math.atan2(
+    t2.clientY - t1.clientY,
+    t2.clientX - t1.clientX
+  ) * 180 / Math.PI;
+}
+
+function update(){
+  overlay.style.transform =
+    `translate(-50%, -50%)
+     translate(${state.x}px, ${state.y}px)
+     scale(${state.scale})
+     rotate(${state.rotation}deg)`;
+}
+
 </script>
 
 </body>
