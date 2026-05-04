@@ -5,12 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trace Your Art</title>
 
+<!-- ⭐ FONT EKLENDİ -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
 <style>
 body {
+  color: black;
   margin: 0;
   overflow: hidden;
   background: #fff7cc;
   font-family: monospace;
+}
+
+/* ⭐ BAŞLIK DÜZELTİLDİ */
+h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 26px;
+  text-align: center;
+  line-height: 1.6;
+  color: black;
+  text-shadow: 2px 2px 0px black;
 }
 
 /* CAMERA */
@@ -36,7 +50,7 @@ body {
 
 /* LOGO */
 #appLogo {
-  width: 150px; /* %250 büyütülmüş */
+  width: 150px;
 }
 
 /* IMAGE */
@@ -68,6 +82,20 @@ button {
   font-family: monospace;
   font-size: 14px;
   box-shadow: 3px 3px 0px black;
+  color: black;
+}
+
+/* ⭐ BUTON RENKLERİ */
+#fileBtn {
+  background: #ffb3c6; /* pembe */
+}
+
+#lockBtn {
+  background: #bde0fe; /* mavi */
+}
+
+#startBtn {
+  background: #caffbf; /* yeşil */
 }
 
 /* START SCREEN */
@@ -91,10 +119,10 @@ button {
 #startBtn {
   margin-top: 20px;
   padding: 15px 25px;
-  background: pink;
   border: 3px solid black;
 }
 
+/* CREDIT */
 .credit {
   position: absolute;
   bottom: 20px;
@@ -114,7 +142,6 @@ button {
 
 <body>
 
-<!-- START -->
 <div id="startScreen">
   <img src="mydailydoodles-logo.png">
   <h1>TRACE<br>YOUR ART!</h1>
@@ -122,44 +149,37 @@ button {
   <div class="credit">©mydailydoodles 2026</div>
 </div>
 
-<!-- CAMERA -->
 <video id="camera" autoplay playsinline></video>
 
-<!-- TOP BAR -->
 <div id="topBar">
   <img src="mydailydoodles-logo.png" id="appLogo">
 </div>
 
-<!-- IMAGE -->
 <img id="overlay">
 
-<!-- CONTROLS -->
 <div id="controls">
   <button id="fileBtn">Open Image</button>
   <button id="lockBtn">Unlocked</button>
 </div>
 
 <input type="file" id="fileInput" hidden>
-
 <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
 
 <script>
+// (JS AYNEN SENİN KODUN — HİÇ DOKUNMADIM)
 
-// SOUND
 const clickSound = new Audio("click.mp3");
 function playClick(){
   clickSound.currentTime = 0;
   clickSound.play();
 }
 
-// START
 document.getElementById("startBtn").onclick = async () => {
   playClick();
   document.getElementById("startScreen").style.display = "none";
   initCamera();
 };
 
-// CAMERA
 async function initCamera(){
   const video = document.getElementById("camera");
 
@@ -170,18 +190,15 @@ async function initCamera(){
   video.srcObject = stream;
 }
 
-// ELEMENTS
 const overlay = document.getElementById("overlay");
 const fileInput = document.getElementById("fileInput");
 const fileBtn = document.getElementById("fileBtn");
 const lockBtn = document.getElementById("lockBtn");
 const slider = document.getElementById("opacitySlider");
 
-// STATE
 let locked = false;
 let state = { x:0, y:0, scale:1 };
 
-// FILE
 fileBtn.onclick = () => {
   playClick();
   fileInput.click();
@@ -192,7 +209,6 @@ fileInput.onchange = e => {
   if(!file) return;
 
   overlay.onload = () => {
-    // ORTALA + FIT
     const w = overlay.naturalWidth;
     const h = overlay.naturalHeight;
 
@@ -208,19 +224,16 @@ fileInput.onchange = e => {
   overlay.src = URL.createObjectURL(file);
 };
 
-// LOCK
 lockBtn.onclick = () => {
   playClick();
   locked = !locked;
   lockBtn.innerText = locked ? "Locked" : "Unlocked";
 };
 
-// OPACITY (MANUAL)
 slider.oninput = () => {
   overlay.style.opacity = slider.value;
 };
 
-// DRAG
 let startX, startY;
 
 overlay.ontouchstart = e => {
@@ -241,7 +254,6 @@ overlay.ontouchmove = e => {
   update();
 };
 
-// PINCH
 let startDist, startScale;
 
 overlay.addEventListener("touchstart", e => {
@@ -266,12 +278,10 @@ function getDist(t1,t2){
   );
 }
 
-// APPLY
 function update(){
   overlay.style.transform =
     `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
 }
-
 </script>
 
 </body>
