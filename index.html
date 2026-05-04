@@ -9,8 +9,8 @@
 body {
   margin: 0;
   overflow: hidden;
-  font-family: sans-serif;
   background: #fff7cc;
+  font-family: monospace;
 }
 
 /* CAMERA */
@@ -19,32 +19,37 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 1;
 }
 
-/* IMAGE OVERLAY */
-#overlay {
+/* TOP BAR (LOGO BACKGROUND) */
+#topBar {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  touch-action: none;
+  top: 0;
+  width: 100%;
+  height: 70px;
+  background: #ffe066;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
 }
 
 /* LOGO */
 #appLogo {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  z-index: 20;
-  pointer-events: none;
-  opacity: 0.9;
+  width: 150px; /* %250 büyütülmüş */
 }
 
-/* BUTTONS */
+/* IMAGE */
+#overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  z-index: 10;
+  touch-action: none;
+}
+
+/* CONTROLS */
 #controls {
   position: fixed;
   bottom: 20px;
@@ -55,18 +60,15 @@ body {
   z-index: 20;
 }
 
+/* RETRO BUTTON */
 button {
-  padding: 12px 18px;
-  border-radius: 20px;
-  border: none;
+  padding: 10px 16px;
+  border: 3px solid black;
+  background: #fff;
+  font-family: monospace;
   font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
+  box-shadow: 3px 3px 0px black;
 }
-
-#fileBtn { background: #ffd6e0; }
-#lockBtn { background: #d6f0ff; }
-#opacityBtn { background: #fff0b3; }
 
 /* START SCREEN */
 #startScreen {
@@ -79,151 +81,183 @@ button {
   align-items: center;
   justify-content: center;
   z-index: 100;
-  text-align: center;
 }
 
-#startScreen.hidden {
-  display: none;
-}
-
-h1 {
-  font-size: 40px;
-  margin: 20px 0;
+#startScreen img {
+  width: 180px;
+  margin-bottom: 20px;
 }
 
 #startBtn {
+  margin-top: 20px;
   padding: 15px 25px;
-  border-radius: 25px;
-  background: #ffc0cb;
-  border: none;
-  font-size: 16px;
+  background: pink;
+  border: 3px solid black;
 }
 
 .credit {
   position: absolute;
   bottom: 20px;
   font-size: 12px;
-  opacity: 0.6;
+}
+
+/* OPACITY SLIDER */
+#opacitySlider {
+  position: fixed;
+  bottom: 80px;
+  width: 60%;
+  left: 20%;
+  z-index: 20;
 }
 </style>
 </head>
 
 <body>
 
+<!-- START -->
 <div id="startScreen">
-  <h1>Trace<br>Your Art!</h1>
+  <img src="mydailydoodles-logo.png">
+  <h1>TRACE<br>YOUR ART!</h1>
   <button id="startBtn">Tap to Start</button>
-  <div class="credit">developed by @mydailydoodles</div>
+  <div class="credit">©mydailydoodles 2026</div>
 </div>
 
+<!-- CAMERA -->
 <video id="camera" autoplay playsinline></video>
-<img id="overlay">
-<img src="mydailydoodles-logo.png" id="appLogo">
 
+<!-- TOP BAR -->
+<div id="topBar">
+  <img src="mydailydoodles-logo.png" id="appLogo">
+</div>
+
+<!-- IMAGE -->
+<img id="overlay">
+
+<!-- CONTROLS -->
 <div id="controls">
   <button id="fileBtn">Open Image</button>
-  <button id="lockBtn">Lock</button>
-  <button id="opacityBtn">Opacity</button>
+  <button id="lockBtn">Unlocked</button>
 </div>
 
-<input type="file" id="fileInput" accept="image/*" hidden>
+<input type="file" id="fileInput" hidden>
+
+<input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
 
 <script>
+
 // SOUND
 const clickSound = new Audio("click.mp3");
-clickSound.volume = 0.4;
-
 function playClick(){
   clickSound.currentTime = 0;
   clickSound.play();
 }
 
 // START
-const startScreen = document.getElementById("startScreen");
-
-startScreen.addEventListener("click", () => {
-
-  clickSound.play().then(()=>{
-    clickSound.pause();
-    clickSound.currentTime = 0;
-  });
-
-  startScreen.classList.add("hidden");
+document.getElementById("startBtn").onclick = async () => {
+  playClick();
+  document.getElementById("startScreen").style.display = "none";
   initCamera();
-});
+};
 
 // CAMERA
 async function initCamera(){
   const video = document.getElementById("camera");
 
   const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { exact: "environment" } }
-  }).catch(() => navigator.mediaDevices.getUserMedia({ video: true }));
+    video: { facingMode: "environment" }
+  });
 
   video.srcObject = stream;
 }
 
 // ELEMENTS
 const overlay = document.getElementById("overlay");
-const fileBtn = document.getElementById("fileBtn");
 const fileInput = document.getElementById("fileInput");
+const fileBtn = document.getElementById("fileBtn");
 const lockBtn = document.getElementById("lockBtn");
-const opacityBtn = document.getElementById("opacityBtn");
+const slider = document.getElementById("opacitySlider");
 
 // STATE
 let locked = false;
-let state = { x:0, y:0, scale:1, rotation:0 };
+let state = { x:0, y:0, scale:1 };
 
-// LOAD IMAGE
-fileBtn.addEventListener("click", () => {
+// FILE
+fileBtn.onclick = () => {
   playClick();
   fileInput.click();
-});
+};
 
-fileInput.addEventListener("change", e => {
+fileInput.onchange = e => {
   const file = e.target.files[0];
   if(!file) return;
 
+  overlay.onload = () => {
+    // ORTALA + FIT
+    const w = overlay.naturalWidth;
+    const h = overlay.naturalHeight;
+
+    const scale = Math.min(
+      window.innerWidth / w,
+      window.innerHeight / h
+    ) * 0.6;
+
+    state = { x:0, y:0, scale };
+    update();
+  };
+
   overlay.src = URL.createObjectURL(file);
-
-  // reset position
-  state = { x:0, y:0, scale:1, rotation:0 };
-  updateTransform();
-
-  fileBtn.innerText = "Change Image";
-});
+};
 
 // LOCK
-lockBtn.addEventListener("click", () => {
+lockBtn.onclick = () => {
   playClick();
   locked = !locked;
-});
+  lockBtn.innerText = locked ? "Locked" : "Unlocked";
+};
 
-// OPACITY
-let opacity = 1;
-opacityBtn.addEventListener("click", () => {
-  playClick();
-  opacity -= 0.25;
-  if(opacity <= 0) opacity = 1;
-  overlay.style.opacity = opacity;
-});
+// OPACITY (MANUAL)
+slider.oninput = () => {
+  overlay.style.opacity = slider.value;
+};
 
 // DRAG
 let startX, startY;
 
-function startDrag(x,y){
-  startX = x - state.x;
-  startY = y - state.y;
-}
+overlay.ontouchstart = e => {
+  if(locked) return;
 
-function moveDrag(x,y){
-  state.x = x - startX;
-  state.y = y - startY;
-  updateTransform();
-}
+  const t = e.touches[0];
+  startX = t.clientX - state.x;
+  startY = t.clientY - state.y;
+};
+
+overlay.ontouchmove = e => {
+  if(locked) return;
+
+  const t = e.touches[0];
+  state.x = t.clientX - startX;
+  state.y = t.clientY - startY;
+
+  update();
+};
 
 // PINCH
-let startDist=0, startScale=1;
+let startDist, startScale;
+
+overlay.addEventListener("touchstart", e => {
+  if(e.touches.length === 2){
+    startDist = getDist(e.touches[0], e.touches[1]);
+    startScale = state.scale;
+  }
+});
+
+overlay.addEventListener("touchmove", e => {
+  if(e.touches.length === 2){
+    let newDist = getDist(e.touches[0], e.touches[1]);
+    state.scale = startScale * (newDist / startDist);
+    update();
+  }
+});
 
 function getDist(t1,t2){
   return Math.hypot(
@@ -232,38 +266,10 @@ function getDist(t1,t2){
   );
 }
 
-// TOUCH EVENTS
-overlay.addEventListener("touchstart", e => {
-  if(locked) return;
-
-  if(e.touches.length === 1){
-    startDrag(e.touches[0].clientX, e.touches[0].clientY);
-  }
-
-  if(e.touches.length === 2){
-    startDist = getDist(e.touches[0], e.touches[1]);
-    startScale = state.scale;
-  }
-});
-
-overlay.addEventListener("touchmove", e => {
-  if(locked) return;
-
-  if(e.touches.length === 1){
-    moveDrag(e.touches[0].clientX, e.touches[0].clientY);
-  }
-
-  if(e.touches.length === 2){
-    let newDist = getDist(e.touches[0], e.touches[1]);
-    state.scale = startScale * (newDist / startDist);
-    updateTransform();
-  }
-});
-
 // APPLY
-function updateTransform(){
+function update(){
   overlay.style.transform =
-    `translate(${state.x}px, ${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+    `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
 }
 
 </script>
