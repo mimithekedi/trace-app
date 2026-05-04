@@ -242,53 +242,11 @@ slider.oninput = () => {
   overlay.style.opacity = slider.value;
 };
 
-let startX, startY;
-
-overlay.ontouchstart = e => {
-  if(locked) return;
-
-  const t = e.touches[0];
-  startX = t.clientX - state.x;
-  startY = t.clientY - state.y;
-};
-
-overlay.ontouchmove = e => {
-  if(locked) return;
-
-  const t = e.touches[0];
-  state.x = t.clientX - startX;
-  state.y = t.clientY - startY;
-
-  update();
-};
-
-let startDist, startScale;
-
-overlay.addEventListener("touchstart", e => {
-  if(e.touches.length === 2){
-    startDist = getDist(e.touches[0], e.touches[1]);
-    startScale = state.scale;
-  }
-});
-
-overlay.addEventListener("touchmove", e => {
-  if(e.touches.length === 2){
-    let newDist = getDist(e.touches[0], e.touches[1]);
-    state.scale = startScale * (newDist / startDist);
-    update();
-  }
-});
-
-function getDist(t1,t2){
-  return Math.hypot(
-    t1.clientX - t2.clientX,
-    t1.clientY - t2.clientY
-  );
-}
-
 function update(){
   overlay.style.transform =
-    `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px)) scale(${state.scale})`;
+    `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px))
+     scale(${state.scale})
+     rotate(${state.rotation}deg)`;
 }
 </script>
 
