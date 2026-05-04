@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trace Your Art</title>
 
-<!-- ⭐ FONT EKLENDİ -->
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
@@ -17,7 +16,6 @@ body {
   font-family: monospace;
 }
 
-/* ⭐ BAŞLIK DÜZELTİLDİ */
 h1 {
   font-family: 'Press Start 2P', monospace;
   font-size: 26px;
@@ -27,7 +25,6 @@ h1 {
   text-shadow: 2px 2px 0px black;
 }
 
-/* CAMERA */
 #camera {
   position: fixed;
   width: 100%;
@@ -35,7 +32,6 @@ h1 {
   object-fit: cover;
 }
 
-/* TOP BAR (LOGO BACKGROUND) */
 #topBar {
   position: fixed;
   top: 0;
@@ -48,12 +44,10 @@ h1 {
   z-index: 20;
 }
 
-/* LOGO */
 #appLogo {
   width: 150px;
 }
 
-/* IMAGE */
 #overlay {
   position: fixed;
   top: 50%;
@@ -63,7 +57,6 @@ h1 {
   touch-action: none;
 }
 
-/* CONTROLS */
 #controls {
   position: fixed;
   bottom: 20px;
@@ -74,7 +67,6 @@ h1 {
   z-index: 20;
 }
 
-/* RETRO BUTTON */
 button {
   padding: 10px 16px;
   border: 3px solid black;
@@ -85,20 +77,10 @@ button {
   color: black;
 }
 
-/* ⭐ BUTON RENKLERİ */
-#fileBtn {
-  background: #ffb3c6; /* pembe */
-}
+#fileBtn { background: #ffb3c6; }
+#lockBtn { background: #bde0fe; }
+#startBtn { background: #caffbf; }
 
-#lockBtn {
-  background: #bde0fe; /* mavi */
-}
-
-#startBtn {
-  background: #caffbf; /* yeşil */
-}
-
-/* START SCREEN */
 #startScreen {
   position: fixed;
   width: 100%;
@@ -122,14 +104,12 @@ button {
   border: 3px solid black;
 }
 
-/* CREDIT */
 .credit {
   position: absolute;
   bottom: 20px;
   font-size: 12px;
 }
 
-/* OPACITY SLIDER */
 #opacitySlider {
   position: fixed;
   bottom: 80px;
@@ -166,7 +146,21 @@ button {
 <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
 
 <script>
-// (JS AYNEN SENİN KODUN — HİÇ DOKUNMADIM)
+
+const overlay = document.getElementById("overlay");
+const fileBtn = document.getElementById("fileBtn");
+const fileInput = document.getElementById("fileInput");
+const lockBtn = document.getElementById("lockBtn");
+const slider = document.getElementById("opacitySlider");
+
+let locked = false;
+
+let state = {
+  x: 0,
+  y: 0,
+  scale: 1,
+  rotation: 0
+};
 
 const clickSound = new Audio("click.mp3");
 
@@ -176,19 +170,13 @@ function playClick(){
   clickSound.play().catch(()=>{});
 }
 
-// 🎬 START
+/* START */
 document.getElementById("startBtn").onclick = async (e) => {
   e.preventDefault();
   playClick();
 
   document.getElementById("startScreen").style.display = "none";
-
-  try {
-    await initCamera();
-  } catch (err) {
-    console.log(err);
-    alert("Camera error");
-  }
+  await initCamera();
 };
 
 async function initCamera(){
@@ -201,17 +189,45 @@ async function initCamera(){
   video.srcObject = stream;
 }
 
-/* =========================
-   TOUCH STATE (DOĞRU YER)
-========================= */
+/* FILE FIX */
+fileBtn.onclick = () => {
+  playClick();
+  fileInput.click();
+};
 
+fileInput.onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  overlay.src = URL.createObjectURL(file);
+
+  overlay.onload = () => {
+    const scale = Math.min(
+      window.innerWidth / overlay.naturalWidth,
+      window.innerHeight / overlay.naturalHeight
+    ) * 0.6;
+
+    state = { x: 0, y: 0, scale, rotation: 0 };
+    update();
+  };
+};
+
+/* LOCK */
+lockBtn.onclick = () => {
+  playClick();
+  locked = !locked;
+  lockBtn.innerText = locked ? "Locked" : "Unlocked";
+};
+
+/* OPACITY */
+slider.oninput = () => {
+  overlay.style.opacity = slider.value;
+};
+
+/* TOUCH */
 let startX, startY;
 let startDist, startScale;
 let startAngle, startRotation;
-
-/* =========================
-   TOUCH SYSTEM
-========================= */
 
 overlay.addEventListener("touchstart", e => {
   if (locked) return;
@@ -244,8 +260,8 @@ overlay.addEventListener("touchmove", e => {
     const t1 = e.touches[0];
     const t2 = e.touches[1];
 
-    let newDist = getDist(t1, t2);
-    let newAngle = getAngle(t1, t2);
+    const newDist = getDist(t1, t2);
+    const newAngle = getAngle(t1, t2);
 
     state.scale = startScale * (newDist / startDist);
     state.rotation = startRotation + (newAngle - startAngle);
@@ -253,10 +269,6 @@ overlay.addEventListener("touchmove", e => {
 
   update();
 }, { passive: true });
-
-/* =========================
-   HELPERS
-========================= */
 
 function getDist(t1,t2){
   return Math.hypot(
@@ -272,10 +284,6 @@ function getAngle(t1,t2){
   ) * 180 / Math.PI;
 }
 
-/* =========================
-   UPDATE TRANSFORM
-========================= */
-
 function update(){
   overlay.style.transform =
     `translate(-50%, -50%)
@@ -283,6 +291,7 @@ function update(){
      scale(${state.scale})
      rotate(${state.rotation}deg)`;
 }
+
 </script>
 
 </body>
