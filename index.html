@@ -3,356 +3,268 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trace Tool</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<title>Trace Your Art</title>
 
 <style>
-
 body {
   margin: 0;
   overflow: hidden;
-  font-family: 'Press Start 2P', monospace;
-  background: #0f172a;
+  font-family: sans-serif;
+  background: #fff7cc;
 }
 
-/* ================= START ================= */
-
-#startScreen {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  background: #fde68a;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  z-index: 999;
-  text-align: center;
-}
-
-#chibiPen {
-  font-size: 52px;
-  margin-bottom: 15px;
-  animation: floatPen 2.2s ease-in-out infinite;
-}
-
-@keyframes floatPen {
-  0% { transform: translateY(0px) rotate(-3deg); }
-  50% { transform: translateY(-6px) rotate(3deg); }
-  100% { transform: translateY(0px) rotate(-3deg); }
-}
-
-#title {
-  font-size: 28px;
-  margin-bottom: 20px;
-  line-height: 1.2;
-}
-
-#hint {
-  font-size: 10px;
-  background: #fbcfe8;
-  padding: 12px 18px;
-  border-radius: 14px;
-  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
-  animation: floatHint 1.2s infinite alternate;
-}
-
-@keyframes floatHint {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(4px); }
-}
-
-#startCredit {
-  position: absolute;
-  bottom: 18px;
-  font-size: 8px;
-  opacity: 0.6;
-}
-
-#startScreen.hidden {
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.6s ease;
-}
-
-/* ================= APP ================= */
-
-#video {
+/* CAMERA */
+#camera {
   position: fixed;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 1;
 }
 
+/* IMAGE OVERLAY */
 #overlay {
-  position: absolute;
-  width: 300px;
-  top: 150px;
-  left: 100px;
-
-  opacity: 0.5;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
   touch-action: none;
 }
 
-/* buttons */
-
-#buttons {
+/* LOGO */
+#appLogo {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  display: flex;
-  gap: 10px;
-  z-index: 10;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.9;
 }
 
-button {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 10px;
-
-  min-width: 90px;
-  height: 36px;
-
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 5px 0 rgba(0,0,0,0.4);
-}
-
-#lockBtn { background:#fbcfe8; }
-#fileBtn { background:#bfdbfe; }
-
+/* BUTTONS */
 #controls {
   position: fixed;
   bottom: 20px;
-  left: 20px;
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(10px);
-  padding: 10px;
-  border-radius: 12px;
-  color: white;
-  font-size: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 20;
 }
 
-#credit {
+button {
+  padding: 12px 18px;
+  border-radius: 20px;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#fileBtn { background: #ffd6e0; }
+#lockBtn { background: #d6f0ff; }
+#opacityBtn { background: #fff0b3; }
+
+/* START SCREEN */
+#startScreen {
   position: fixed;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 8px;
-  color: rgba(255,255,255,0.5);
+  width: 100%;
+  height: 100%;
+  background: #fff7cc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  text-align: center;
 }
 
+#startScreen.hidden {
+  display: none;
+}
+
+h1 {
+  font-size: 40px;
+  margin: 20px 0;
+}
+
+#startBtn {
+  padding: 15px 25px;
+  border-radius: 25px;
+  background: #ffc0cb;
+  border: none;
+  font-size: 16px;
+}
+
+.credit {
+  position: absolute;
+  bottom: 20px;
+  font-size: 12px;
+  opacity: 0.6;
+}
 </style>
 </head>
 
 <body>
 
-<!-- START -->
 <div id="startScreen">
-  <div id="chibiPen">✏️</div>
-  <div id="title">trace<br>your art!</div>
-  <div id="hint">tap to start</div>
-  <div id="startCredit">
-    developed by<br>
-    ©mydailydoodles<br>
-    2026
-  </div>
+  <h1>Trace<br>Your Art!</h1>
+  <button id="startBtn">Tap to Start</button>
+  <div class="credit">developed by @mydailydoodles</div>
 </div>
 
-<!-- APP -->
-<video id="video" autoplay playsinline></video>
-<img id="overlay" src="" />
-
-<div id="buttons">
-  <button id="lockBtn">Lock</button>
-  <button id="fileBtn">Load</button>
-</div>
+<video id="camera" autoplay playsinline></video>
+<img id="overlay">
+<img src="mydailydoodles-logo.png" id="appLogo">
 
 <div id="controls">
-Opacity<br><br>
-<input type="range" min="0" max="1" step="0.1" id="opacity">
+  <button id="fileBtn">Open Image</button>
+  <button id="lockBtn">Lock</button>
+  <button id="opacityBtn">Opacity</button>
 </div>
 
-<div id="credit">developed by @mydailydoodles</div>
+<input type="file" id="fileInput" accept="image/*" hidden>
 
 <script>
+// SOUND
+const clickSound = new Audio("click.mp3");
+clickSound.volume = 0.4;
 
-/* ================= START ================= */
+function playClick(){
+  clickSound.currentTime = 0;
+  clickSound.play();
+}
 
+// START
 const startScreen = document.getElementById("startScreen");
 
 startScreen.addEventListener("click", () => {
-  startScreen.classList.add("hidden");
-  setTimeout(initCamera, 400);
-});
 
-/* ================= CAMERA ================= */
-
-function initCamera(){
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" }
-  }).then(stream => {
-    document.getElementById("video").srcObject = stream;
+  clickSound.play().then(()=>{
+    clickSound.pause();
+    clickSound.currentTime = 0;
   });
+
+  startScreen.classList.add("hidden");
+  initCamera();
+});
+
+// CAMERA
+async function initCamera(){
+  const video = document.getElementById("camera");
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { exact: "environment" } }
+  }).catch(() => navigator.mediaDevices.getUserMedia({ video: true }));
+
+  video.srcObject = stream;
 }
 
-/* ================= FILE ================= */
-
-const file = document.createElement("input");
-file.type = "file";
-file.style.display = "none";
-document.body.appendChild(file);
-
+// ELEMENTS
 const overlay = document.getElementById("overlay");
+const fileBtn = document.getElementById("fileBtn");
+const fileInput = document.getElementById("fileInput");
+const lockBtn = document.getElementById("lockBtn");
+const opacityBtn = document.getElementById("opacityBtn");
 
-file.addEventListener("change", e => {
-  const img = e.target.files[0];
-  overlay.src = URL.createObjectURL(img);
-  resetOverlay();
+// STATE
+let locked = false;
+let state = { x:0, y:0, scale:1, rotation:0 };
+
+// LOAD IMAGE
+fileBtn.addEventListener("click", () => {
+  playClick();
+  fileInput.click();
 });
 
-document.getElementById("fileBtn").addEventListener("click", () => {
-  file.click();
-});
+fileInput.addEventListener("change", e => {
+  const file = e.target.files[0];
+  if(!file) return;
 
-/* ================= OPACITY ================= */
+  overlay.src = URL.createObjectURL(file);
 
-document.getElementById("opacity").addEventListener("input", e => {
-  overlay.style.opacity = e.target.value;
-});
-
-/* ================= STATE ================= */
-
-let state = {
-  dragging:false,
-  scale:1,
-  rotation:0,
-  lastX:0,
-  lastY:0,
-  offsetX:100,
-  offsetY:150
-};
-
-let locked=false;
-
-/* ================= TRANSFORM ================= */
-
-function updateTransform(){
-  overlay.style.transform =
-  `translate(${state.offsetX}px,${state.offsetY}px)
-   scale(${state.scale})
-   rotate(${state.rotation}deg)`;
-}
-
-function resetOverlay(){
-  state.scale=1;
-  state.rotation=0;
-  state.offsetX=window.innerWidth/2-150;
-  state.offsetY=window.innerHeight/2-150;
+  // reset position
+  state = { x:0, y:0, scale:1, rotation:0 };
   updateTransform();
-}
 
-/* ================= DRAG ================= */
+  fileBtn.innerText = "Change Image";
+});
+
+// LOCK
+lockBtn.addEventListener("click", () => {
+  playClick();
+  locked = !locked;
+});
+
+// OPACITY
+let opacity = 1;
+opacityBtn.addEventListener("click", () => {
+  playClick();
+  opacity -= 0.25;
+  if(opacity <= 0) opacity = 1;
+  overlay.style.opacity = opacity;
+});
+
+// DRAG
+let startX, startY;
 
 function startDrag(x,y){
-  if(locked) return;
-  state.dragging=true;
-  state.lastX=x;
-  state.lastY=y;
+  startX = x - state.x;
+  startY = y - state.y;
 }
 
 function moveDrag(x,y){
-  if(locked) return;
-  if(!state.dragging) return;
-
-  state.offsetX += x-state.lastX;
-  state.offsetY += y-state.lastY;
-
-  state.lastX=x;
-  state.lastY=y;
-
+  state.x = x - startX;
+  state.y = y - startY;
   updateTransform();
 }
 
-function endDrag(){
-  state.dragging=false;
-}
+// PINCH
+let startDist=0, startScale=1;
 
-/* mouse */
-overlay.addEventListener("mousedown",e=>startDrag(e.clientX,e.clientY));
-document.addEventListener("mousemove",e=>moveDrag(e.clientX,e.clientY));
-document.addEventListener("mouseup",endDrag);
-
-/* ================= PINCH + ROTATE FIX ================= */
-
-let startDist=0;
-let startAngle=0;
-let startScale=1;
-let startRotation=0;
-
-function dist(t1,t2){
+function getDist(t1,t2){
   return Math.hypot(
-    t1.clientX-t2.clientX,
-    t1.clientY-t2.clientY
+    t1.clientX - t2.clientX,
+    t1.clientY - t2.clientY
   );
 }
 
-function angle(t1,t2){
-  return Math.atan2(
-    t2.clientY-t1.clientY,
-    t2.clientX-t1.clientX
-  ) * 180 / Math.PI;
-}
-
-overlay.addEventListener("touchstart",e=>{
-
+// TOUCH EVENTS
+overlay.addEventListener("touchstart", e => {
   if(locked) return;
 
-  if(e.touches.length===1){
-    let t=e.touches[0];
-    startDrag(t.clientX,t.clientY);
+  if(e.touches.length === 1){
+    startDrag(e.touches[0].clientX, e.touches[0].clientY);
   }
 
-  if(e.touches.length===2){
-    startDist=dist(e.touches[0],e.touches[1]);
-    startAngle=angle(e.touches[0],e.touches[1]);
-
-    startScale=state.scale;
-    startRotation=state.rotation;
+  if(e.touches.length === 2){
+    startDist = getDist(e.touches[0], e.touches[1]);
+    startScale = state.scale;
   }
-
 });
 
-overlay.addEventListener("touchmove",e=>{
-
+overlay.addEventListener("touchmove", e => {
   if(locked) return;
 
-  if(e.touches.length===1){
-    let t=e.touches[0];
-    moveDrag(t.clientX,t.clientY);
+  if(e.touches.length === 1){
+    moveDrag(e.touches[0].clientX, e.touches[0].clientY);
   }
 
-  if(e.touches.length===2){
-
-    let newDist=dist(e.touches[0],e.touches[1]);
-    let newAngle=angle(e.touches[0],e.touches[1]);
-
-    state.scale=startScale*(newDist/startDist);
-    state.rotation=startRotation+(newAngle-startAngle);
-
+  if(e.touches.length === 2){
+    let newDist = getDist(e.touches[0], e.touches[1]);
+    state.scale = startScale * (newDist / startDist);
     updateTransform();
   }
-
 });
 
-/* ================= LOCK ================= */
-
-document.getElementById("lockBtn").addEventListener("click",()=>{
-  locked=!locked;
-  document.getElementById("lockBtn").innerText=locked?"Locked":"Lock";
-});
+// APPLY
+function updateTransform(){
+  overlay.style.transform =
+    `translate(${state.x}px, ${state.y}px) scale(${state.scale}) rotate(${state.rotation}deg)`;
+}
 
 </script>
 
