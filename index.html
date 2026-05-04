@@ -170,10 +170,14 @@ button {
 
 const clickSound = new Audio("click.mp3");
 function playClick(){
+  clickSound.pause();      // 👈 kritik fix
   clickSound.currentTime = 0;
-  clickSound.play();
+
+  clickSound.play().catch(()=>{});
+}
 }
 
+  
 document.getElementById("startBtn").onclick = async () => {
   playClick();
   document.getElementById("startScreen").style.display = "none";
