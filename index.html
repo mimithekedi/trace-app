@@ -180,73 +180,61 @@ document.getElementById("startBtn").onclick = async () => {
   playClick();
 
   try {
-    document.getElementById("startScreen").style.display = "none";
-    await initCamera();
-  } catch (err) {
-    alert("Camera permission blocked or not supported");
-    console.log(err);
+  let startX, startY;
+let startDist, startScale;
+let startAngle, startRotation;
+
+overlay.addEventListener("touchstart", e => {
+  if (locked) return;
+
+  // ✋ DRAG (1 parmak)
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    startX = t.clientX - state.x;
+    startY = t.clientY - state.y;
   }
-};
 
-async function initCamera(){
-  const video = document.getElementById("camera");
+  // 🔍 PINCH + ROTATE (2 parmak)
+  if (e.touches.length === 2) {
+    startDist = getDist(e.touches[0], e.touches[1]);
+    startAngle = getAngle(e.touches[0], e.touches[1]);
 
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" }
-  });
+    startScale = state.scale;
+    startRotation = state.rotation;
+  }
+}, { passive: true });
 
-  video.srcObject = stream;
-}
+overlay.addEventListener("touchmove", e => {
+  if (locked) return;
 
-const overlay = document.getElementById("overlay");
-const fileInput = document.getElementById("fileInput");
-const fileBtn = document.getElementById("fileBtn");
-const lockBtn = document.getElementById("lockBtn");
-const slider = document.getElementById("opacitySlider");
+  // ✋ DRAG
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    state.x = t.clientX - startX;
+    state.y = t.clientY - startY;
+  }
 
-let locked = false;
-let state = { x:0, y:0, scale:1 };
+  // 🔍 PINCH + ROTATE
+  if (e.touches.length === 2) {
+    const t1 = e.touches[0];
+    const t2 = e.touches[1];
 
-fileBtn.onclick = () => {
-  playClick();
-  fileInput.click();
-};
+    let newDist = getDist(t1, t2);
+    let newAngle = getAngle(t1, t2);
 
-fileInput.onchange = e => {
-  const file = e.target.files[0];
-  if(!file) return;
+    state.scale = startScale * (newDist / startDist);
+    state.rotation = startRotation + (newAngle - startAngle);
+  }
 
-  overlay.onload = () => {
-    const w = overlay.naturalWidth;
-    const h = overlay.naturalHeight;
-
-    const scale = Math.min(
-      window.innerWidth / w,
-      window.innerHeight / h
-    ) * 0.6;
-
-    state = { x:0, y:0, scale };
-    update();
-  };
-
-  overlay.src = URL.createObjectURL(file);
-};
-
-lockBtn.onclick = () => {
-  playClick();
-  locked = !locked;
-  lockBtn.innerText = locked ? "Locked" : "Unlocked";
-};
-
-slider.oninput = () => {
-  overlay.style.opacity = slider.value;
-};
-
-function update(){
+  function update(){
   overlay.style.transform =
-    `translate(calc(-50% + ${state.x}px), calc(-50% + ${state.y}px))
+    `translate(-50%, -50%)
+     translate(${state.x}px, ${state.y}px)
      scale(${state.scale})
      rotate(${state.rotation}deg)`;
+}
+  update();
+}, { passive: true });
 }
 </script>
 
