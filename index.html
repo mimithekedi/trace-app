@@ -191,7 +191,7 @@ document.getElementById("startBtn").onclick = async (e) => {
   }
 };
 
-  async function initCamera(){
+async function initCamera(){
   const video = document.getElementById("camera");
 
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -201,11 +201,17 @@ document.getElementById("startBtn").onclick = async (e) => {
   video.srcObject = stream;
 }
 
+/* =========================
+   TOUCH STATE (DOĞRU YER)
+========================= */
+
 let startX, startY;
 let startDist, startScale;
 let startAngle, startRotation;
-}, { passive: true });
-}
+
+/* =========================
+   TOUCH SYSTEM
+========================= */
 
 overlay.addEventListener("touchstart", e => {
   if (locked) return;
@@ -248,6 +254,10 @@ overlay.addEventListener("touchmove", e => {
   update();
 }, { passive: true });
 
+/* =========================
+   HELPERS
+========================= */
+
 function getDist(t1,t2){
   return Math.hypot(
     t1.clientX - t2.clientX,
@@ -262,6 +272,10 @@ function getAngle(t1,t2){
   ) * 180 / Math.PI;
 }
 
+/* =========================
+   UPDATE TRANSFORM
+========================= */
+
 function update(){
   overlay.style.transform =
     `translate(-50%, -50%)
@@ -269,7 +283,6 @@ function update(){
      scale(${state.scale})
      rotate(${state.rotation}deg)`;
 }
-
 </script>
 
 </body>
