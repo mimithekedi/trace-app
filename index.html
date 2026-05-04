@@ -146,7 +146,7 @@ button {
   <img src="mydailydoodles-logo.png">
   <h1>TRACE<br>YOUR ART!</h1>
   <button id="startBtn">Tap to Start</button>
-  <div class="credit">©mydailydoodles 2026</div>
+  <div class="credit">©mydailydoodles , 2026</div>
 </div>
 
 <video id="camera" autoplay playsinline></video>
@@ -175,13 +175,17 @@ function playClick(){
 
   clickSound.play().catch(()=>{});
 }
-}
-
   
 document.getElementById("startBtn").onclick = async () => {
   playClick();
-  document.getElementById("startScreen").style.display = "none";
-  initCamera();
+
+  try {
+    document.getElementById("startScreen").style.display = "none";
+    await initCamera();
+  } catch (err) {
+    alert("Camera permission blocked or not supported");
+    console.log(err);
+  }
 };
 
 async function initCamera(){
